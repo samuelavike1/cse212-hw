@@ -21,8 +21,31 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Use a set to track words we've already seen
+        var seen = new HashSet<string>();
+        var result = new List<string>();
+
+        foreach (var word in words)
+        {
+            // Skip words with same letters (like "aa") - they can't have a symmetric pair
+            if (word[0] == word[1])
+                continue;
+
+            // Create the reversed word
+            var reversed = new string(new[] { word[1], word[0] });
+
+            // Check if the reversed word has already been seen
+            if (seen.Contains(reversed))
+            {
+                // Found a symmetric pair!
+                result.Add($"{word} & {reversed}");
+            }
+
+            // Add current word to seen set
+            seen.Add(word);
+        }
+
+        return result.ToArray();
     }
 
     /// <summary>
@@ -42,7 +65,18 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            // Degree is in the 4th column (index 3)
+            var degree = fields[3];
+
+            // Count occurrences of each degree using the dictionary
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -66,8 +100,42 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Helper function to count letter frequencies, ignoring spaces and case
+        Dictionary<char, int> CountLetters(string word)
+        {
+            var counts = new Dictionary<char, int>();
+            foreach (var c in word.ToLower())
+            {
+                // Ignore spaces
+                if (c == ' ')
+                    continue;
+
+                // Count each letter
+                if (counts.ContainsKey(c))
+                    counts[c]++;
+                else
+                    counts[c] = 1;
+            }
+            return counts;
+        }
+
+        // Get letter counts for both words
+        var counts1 = CountLetters(word1);
+        var counts2 = CountLetters(word2);
+
+        // Compare the dictionaries
+        // First check if they have the same number of unique letters
+        if (counts1.Count != counts2.Count)
+            return false;
+
+        // Check if each letter has the same count in both words
+        foreach (var kvp in counts1)
+        {
+            if (!counts2.ContainsKey(kvp.Key) || counts2[kvp.Key] != kvp.Value)
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -96,11 +164,19 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        // Create a list to hold the formatted earthquake strings
+        var result = new List<string>();
+
+        // Loop through each earthquake feature and format the output
+        foreach (var feature in featureCollection.Features)
+        {
+            var place = feature.Properties.Place;
+            var mag = feature.Properties.Mag;
+
+            // Format: "place - Mag magnitude"
+            result.Add($"{place} - Mag {mag}");
+        }
+
+        return result.ToArray();
     }
 }
